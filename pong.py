@@ -19,6 +19,7 @@ BALL_SIZE = int(os.environ.get("BALL_SIZE", 20))
 PADDLE_SPEED = int(os.environ.get("PADDLE_SPEED", 5))
 BALL_SPEED_X = int(os.environ.get("BALL_SPEED_X", 5))
 BALL_SPEED_Y = int(os.environ.get("BALL_SPEED_Y", 5))
+TICK_RATE = int(os.environ.get("TICK_RATE", 60))
 BALL_SPEED_INCREASE = float(os.environ.get("BALL_SPEED_INCREASE", 0.0001))
 
 # Colors
@@ -152,6 +153,6 @@ while running:
         screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 10))
 
     pygame.display.flip()
-    clock.tick(120)
+    clock.tick(TICK_RATE)
 
 pygame.quit()
