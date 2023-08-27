@@ -1,16 +1,23 @@
 import pygame
-import random
+import random, os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Initialize Pygame
 pygame.init()
 
-# Game constants
-WIDTH, HEIGHT = 800, 600
-PADDLE_WIDTH, PADDLE_HEIGHT = 15, 100
-BALL_SIZE = 20
-PADDLE_SPEED = 5
-BALL_SPEED_X = 5
-BALL_SPEED_Y = 5
+# Access environment variables with default values
+WIDTH = int(os.environ.get("WIDTH", 800))
+HEIGHT = int(os.environ.get("HEIGHT", 600))
+PADDLE_WIDTH = int(os.environ.get("PADDLE_WIDTH", 15))
+PADDLE_HEIGHT = int(os.environ.get("PADDLE_HEIGHT", 100))
+BALL_SIZE = int(os.environ.get("BALL_SIZE", 20))
+PADDLE_SPEED = int(os.environ.get("PADDLE_SPEED", 5))
+BALL_SPEED_X = int(os.environ.get("BALL_SPEED_X", 5))
+BALL_SPEED_Y = int(os.environ.get("BALL_SPEED_Y", 5))
+BALL_SPEED_INCREASE = float(os.environ.get("BALL_SPEED_INCREASE", 0.0001))
 
 # Colors
 WHITE = (255, 255, 255)
@@ -81,6 +88,10 @@ while running:
         ball_speed[0] = -ball_speed[0]
 
     move_opponent()
+
+    # Increase ball speed over time
+    ball_speed[0] *= (1 + BALL_SPEED_INCREASE)
+    ball_speed[1] *= (1 + BALL_SPEED_INCREASE)
 
     # Draw everything
     screen.fill(BLACK)
