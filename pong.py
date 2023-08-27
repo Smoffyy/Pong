@@ -36,6 +36,10 @@ ball_speed = [BALL_SPEED_X, BALL_SPEED_Y]
 
 clock = pygame.time.Clock()
 
+# Initialize scores
+player_score = 0
+opponent_score = 0
+
 # AI Opponent movement
 def move_opponent():
     if ball_speed[0] > 0:  # Only move when the ball is coming towards the opponent
@@ -52,9 +56,14 @@ def move_player_ai():
         elif player_paddle.centery > ball.centery:
             player_paddle.y -= PADDLE_SPEED
 
+def reset_ball():
+    ball.center = (WIDTH // 2, HEIGHT // 2)
+    ball_speed[0] = random.choice([-1, 1]) * BALL_SPEED_X
+    ball_speed[1] = random.choice([-1, 1]) * BALL_SPEED_Y
+
 # Create font for displaying text
 font = pygame.font.Font(None, 36)
-player_ai_enabled = False
+player_ai_enabled = True
 running = True
 while running:
     for event in pygame.event.get():
@@ -79,9 +88,22 @@ while running:
     ball.x += ball_speed[0]
     ball.y += ball_speed[1]
 
+    # Initialize ball's random direction on the first run
+    if ball_speed[0] == BALL_SPEED_X and ball_speed[1] == BALL_SPEED_Y:
+        ball_speed[0] = random.choice([-1, 1]) * BALL_SPEED_X
+        ball_speed[1] = random.choice([-1, 1]) * BALL_SPEED_Y
+
     # Ball collision with walls
     if ball.top <= 0 or ball.bottom >= HEIGHT:
         ball_speed[1] = -ball_speed[1]
+    
+    # Ball collision with walls (scoring)
+    if ball.left <= 0:
+        opponent_score += 1
+        reset_ball()
+    elif ball.right >= WIDTH:
+        player_score += 1
+        reset_ball()
 
     # Ball collision with paddles
     if ball.colliderect(player_paddle) or ball.colliderect(opponent_paddle):
@@ -99,6 +121,12 @@ while running:
     pygame.draw.rect(screen, WHITE, opponent_paddle)
     pygame.draw.ellipse(screen, WHITE, ball)
     pygame.draw.aaline(screen, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))
+
+    # Draw scores
+    player_score_text = font.render(f"Player: {player_score}", True, WHITE)
+    opponent_score_text = font.render(f"Opponent: {opponent_score}", True, WHITE)
+    screen.blit(player_score_text, (10, 10))
+    screen.blit(opponent_score_text, (WIDTH - opponent_score_text.get_width() - 10, 10))
 
     if player_ai_enabled:
         text = font.render("Player AI Enabled", True, WHITE)
