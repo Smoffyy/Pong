@@ -1,5 +1,7 @@
 import pygame
-import random, os
+import random
+import time
+import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -27,7 +29,7 @@ BLACK = (0, 0, 0)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong")
 
-# Create paddles and ball
+# Initialize game objects and variables
 player_paddle = pygame.Rect(50, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
 opponent_paddle = pygame.Rect(WIDTH - 50 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
 ball = pygame.Rect(WIDTH // 2 - BALL_SIZE // 2, HEIGHT // 2 - BALL_SIZE // 2, BALL_SIZE, BALL_SIZE)
@@ -36,9 +38,11 @@ ball_speed = [BALL_SPEED_X, BALL_SPEED_Y]
 
 clock = pygame.time.Clock()
 
-# Initialize scores
+# Initialize scores and reset variables
 player_score = 0
 opponent_score = 0
+reset_start_time = 0
+ball_moving = False
 
 # AI Opponent movement
 def move_opponent():
@@ -56,14 +60,14 @@ def move_player_ai():
         elif player_paddle.centery > ball.centery:
             player_paddle.y -= PADDLE_SPEED
 
+# Reset the ball's position and direction
 def reset_ball():
     ball.center = (WIDTH // 2, HEIGHT // 2)
     ball_speed[0] = random.choice([-1, 1]) * BALL_SPEED_X
     ball_speed[1] = random.choice([-1, 1]) * BALL_SPEED_Y
 
-# Create font for displaying text
-font = pygame.font.Font(None, 36)
-player_ai_enabled = True
+# Main game loop
+player_ai_enabled = False
 running = True
 while running:
     for event in pygame.event.get():
@@ -82,28 +86,39 @@ while running:
 
     # Player AI Movement
     if player_ai_enabled:
-            move_player_ai()
-
-    # Ball movement
-    ball.x += ball_speed[0]
-    ball.y += ball_speed[1]
+        move_player_ai()
 
     # Initialize ball's random direction on the first run
     if ball_speed[0] == BALL_SPEED_X and ball_speed[1] == BALL_SPEED_Y:
         ball_speed[0] = random.choice([-1, 1]) * BALL_SPEED_X
         ball_speed[1] = random.choice([-1, 1]) * BALL_SPEED_Y
 
+    # Handle ball reset and delay
+    if ball_moving:
+        ball.x += ball_speed[0]
+        ball.y += ball_speed[1]
+
+    time_since_reset = time.time() - reset_start_time
+    if time_since_reset < 1:  # Delay the ball movement for 1 second
+        ball_moving = False  # Stop ball movement
+    else:
+        ball_moving = True  # Start ball movement
+
     # Ball collision with walls
     if ball.top <= 0 or ball.bottom >= HEIGHT:
         ball_speed[1] = -ball_speed[1]
-    
+
     # Ball collision with walls (scoring)
     if ball.left <= 0:
         opponent_score += 1
         reset_ball()
+        reset_start_time = time.time()  # Record the time when the ball is reset
+        ball_moving = False  # Stop ball movement
     elif ball.right >= WIDTH:
         player_score += 1
         reset_ball()
+        reset_start_time = time.time()  # Record the time when the ball is reset
+        ball_moving = False  # Stop ball movement
 
     # Ball collision with paddles
     if ball.colliderect(player_paddle) or ball.colliderect(opponent_paddle):
@@ -123,6 +138,7 @@ while running:
     pygame.draw.aaline(screen, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))
 
     # Draw scores
+    font = pygame.font.Font(None, 36)
     player_score_text = font.render(f"Player: {player_score}", True, WHITE)
     opponent_score_text = font.render(f"Opponent: {opponent_score}", True, WHITE)
     screen.blit(player_score_text, (10, 10))
