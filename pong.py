@@ -47,17 +47,17 @@ ball_moving = False
 # AI Opponent movement
 def move_opponent():
     if ball_speed[0] > 0:  # Only move when the ball is coming towards the opponent
-        if opponent_paddle.centery < ball.centery:
+        if ball.centery > opponent_paddle.centery:
             opponent_paddle.y += PADDLE_SPEED
-        elif opponent_paddle.centery > ball.centery:
+        elif ball.centery < opponent_paddle.centery:
             opponent_paddle.y -= PADDLE_SPEED
 
 # AI Player movement
 def move_player_ai():
     if ball_speed[0] < 0:  # Only move when the ball is coming towards the player AI
-        if player_paddle.centery < ball.centery:
+        if ball.centery > player_paddle.centery:
             player_paddle.y += PADDLE_SPEED
-        elif player_paddle.centery > ball.centery:
+        elif ball.centery < player_paddle.centery:
             player_paddle.y -= PADDLE_SPEED
 
 # Reset the ball's position and direction
@@ -149,6 +149,9 @@ while running:
         screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 10))
 
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(120)
+
+    # Inside the main game loop
+    move_opponent()
 
 pygame.quit()
