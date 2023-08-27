@@ -88,6 +88,9 @@ while running:
     if player_ai_enabled:
         move_player_ai()
 
+    # Opponent AI Movement
+    move_opponent()
+
     # Initialize ball's random direction on the first run
     if ball_speed[0] == BALL_SPEED_X and ball_speed[1] == BALL_SPEED_Y:
         ball_speed[0] = random.choice([-1, 1]) * BALL_SPEED_X
@@ -150,8 +153,5 @@ while running:
 
     pygame.display.flip()
     clock.tick(120)
-
-    # Inside the main game loop
-    move_opponent()
 
 pygame.quit()
