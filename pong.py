@@ -28,6 +28,7 @@ BLACK = (0, 0, 0)
 
 # Create the game window
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+batch_surface = pygame.Surface((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong")
 
 # Initialize game objects and variables
@@ -132,14 +133,17 @@ while running:
     ball_speed[0] *= (1 + BALL_SPEED_INCREASE)
     ball_speed[1] *= (1 + BALL_SPEED_INCREASE)
 
-    # Draw everything
-    screen.fill(BLACK)
-    pygame.draw.rect(screen, WHITE, player_paddle)
-    pygame.draw.rect(screen, WHITE, opponent_paddle)
-    pygame.draw.ellipse(screen, WHITE, ball)
-    pygame.draw.aaline(screen, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))
+    # Batch drawing onto the batch_surface
+    batch_surface.fill(BLACK)
+    pygame.draw.rect(batch_surface, WHITE, player_paddle)
+    pygame.draw.rect(batch_surface, WHITE, opponent_paddle)
+    pygame.draw.ellipse(batch_surface, WHITE, ball)
+    pygame.draw.aaline(batch_surface, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))
 
-    # Draw scores
+    # Update the screen with the batch drawing
+    screen.blit(batch_surface, (0, 0))
+
+    # Draw scores and text directly onto the screen
     font = pygame.font.Font(None, 36)
     player_score_text = font.render(f"Player: {player_score}", True, WHITE)
     opponent_score_text = font.render(f"Opponent: {opponent_score}", True, WHITE)
