@@ -128,8 +128,6 @@ while running:
     if ball.colliderect(player_paddle) or ball.colliderect(opponent_paddle):
         ball_speed[0] = -ball_speed[0]
 
-    move_opponent()
-
     # Increase ball speed over time
     ball_speed[0] *= (1 + BALL_SPEED_INCREASE)
     ball_speed[1] *= (1 + BALL_SPEED_INCREASE)
