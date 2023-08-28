@@ -62,9 +62,9 @@ clock = pygame.time.Clock()
 # AI Opponent movement
 def move_opponent():
     if ball_speed[0] > 0:  # Only move when the ball is coming towards the opponent
-        if ball.rect.centery > opponent_paddle.rect.centery:
+        if ball.rect.centery > opponent_paddle.rect.centery and opponent_paddle.rect.bottom < HEIGHT:
             opponent_paddle.move(0, PADDLE_SPEED)
-        elif ball.rect.centery < opponent_paddle.rect.centery:
+        elif ball.rect.centery < opponent_paddle.rect.centery and opponent_paddle.rect.top > 0:
             opponent_paddle.move(0, -PADDLE_SPEED)
 
 # AI Player movement
@@ -93,9 +93,9 @@ while running:
 
     keys = pygame.key.get_pressed()
     if not game_state["player_ai_enabled"]:
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] and player_paddle.rect.top > 0:
             player_paddle.move(0, -PADDLE_SPEED)
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_DOWN] and player_paddle.rect.bottom < HEIGHT:
             player_paddle.move(0, PADDLE_SPEED)
 
     # Player AI Movement
