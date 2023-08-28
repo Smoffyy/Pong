@@ -148,6 +148,7 @@ while running:
     screen.blit(player_score_text, (10, 10))
     screen.blit(opponent_score_text, (WIDTH - opponent_score_text.get_width() - 10, 10))
 
+    # Enable Text if Player AI is Enabled
     if player_ai_enabled:
         text = font.render("Player AI Enabled", True, WHITE)
         screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 10))
