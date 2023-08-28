@@ -27,7 +27,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Create the game window
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((WIDTH, HEIGHT), vsync=1)
 batch_surface = pygame.Surface((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong")
 
