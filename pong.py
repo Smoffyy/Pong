@@ -32,44 +32,56 @@ batch_surface = pygame.Surface((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong")
 
 # Initialize game objects and variables
-player_paddle = pygame.Rect(50, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
-opponent_paddle = pygame.Rect(WIDTH - 50 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
-ball = pygame.Rect(WIDTH // 2 - BALL_SIZE // 2, HEIGHT // 2 - BALL_SIZE // 2, BALL_SIZE, BALL_SIZE)
+class GameObject:
+    def __init__(self, x, y, width, height, color):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color = color
+
+    def move(self, dx, dy):
+        self.rect.move_ip(dx, dy)
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, self.color, self.rect)
+
+player_paddle = GameObject(50, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE)
+opponent_paddle = GameObject(WIDTH - 50 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE)
+ball = GameObject(WIDTH // 2 - BALL_SIZE // 2, HEIGHT // 2 - BALL_SIZE // 2, BALL_SIZE, BALL_SIZE, WHITE)
+
+game_state = {
+    "player_score": 0,
+    "opponent_score": 0,
+    "reset_start_time": 0,
+    "ball_moving": False,
+    "player_ai_enabled": False
+}
 
 ball_speed = [BALL_SPEED_X, BALL_SPEED_Y]
 
 clock = pygame.time.Clock()
 
-# Initialize scores and reset variables
-player_score = 0
-opponent_score = 0
-reset_start_time = 0
-ball_moving = False
-
 # AI Opponent movement
 def move_opponent():
     if ball_speed[0] > 0:  # Only move when the ball is coming towards the opponent
-        if ball.centery > opponent_paddle.centery:
-            opponent_paddle.y += PADDLE_SPEED
-        elif ball.centery < opponent_paddle.centery:
-            opponent_paddle.y -= PADDLE_SPEED
+        if ball.rect.centery > opponent_paddle.rect.centery:
+            opponent_paddle.move(0, PADDLE_SPEED)
+        elif ball.rect.centery < opponent_paddle.rect.centery:
+            opponent_paddle.move(0, -PADDLE_SPEED)
 
 # AI Player movement
 def move_player_ai():
     if ball_speed[0] < 0:  # Only move when the ball is coming towards the player AI
-        if ball.centery > player_paddle.centery:
-            player_paddle.y += PADDLE_SPEED
-        elif ball.centery < player_paddle.centery:
-            player_paddle.y -= PADDLE_SPEED
+        if ball.rect.centery > player_paddle.rect.centery:
+            player_paddle.move(0, PADDLE_SPEED)
+        elif ball.rect.centery < player_paddle.rect.centery:
+            player_paddle.move(0, -PADDLE_SPEED)
 
 # Reset the ball's position and direction
 def reset_ball():
-    ball.center = (WIDTH // 2, HEIGHT // 2)
+    ball.rect.center = (WIDTH // 2, HEIGHT // 2)
     ball_speed[0] = random.choice([-1, 1]) * BALL_SPEED_X
     ball_speed[1] = random.choice([-1, 1]) * BALL_SPEED_Y
 
 # Main game loop
-player_ai_enabled = False
 running = True
 while running:
     for event in pygame.event.get():
@@ -77,17 +89,17 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:
-                player_ai_enabled = not player_ai_enabled
+                game_state["player_ai_enabled"] = not game_state["player_ai_enabled"]
 
     keys = pygame.key.get_pressed()
-    if not player_ai_enabled:
+    if not game_state["player_ai_enabled"]:
         if keys[pygame.K_UP]:
-            player_paddle.y -= PADDLE_SPEED
+            player_paddle.move(0, -PADDLE_SPEED)
         if keys[pygame.K_DOWN]:
-            player_paddle.y += PADDLE_SPEED
+            player_paddle.move(0, PADDLE_SPEED)
 
     # Player AI Movement
-    if player_ai_enabled:
+    if game_state["player_ai_enabled"]:
         move_player_ai()
 
     # Opponent AI Movement
@@ -99,34 +111,34 @@ while running:
         ball_speed[1] = random.choice([-1, 1]) * BALL_SPEED_Y
 
     # Handle ball reset and delay
-    if ball_moving:
-        ball.x += ball_speed[0]
-        ball.y += ball_speed[1]
+    if game_state["ball_moving"]:
+        ball.rect.x += ball_speed[0]
+        ball.rect.y += ball_speed[1]
 
-    time_since_reset = time.time() - reset_start_time
+    time_since_reset = time.time() - game_state["reset_start_time"]
     if time_since_reset < 1:  # Delay the ball movement for 1 second
-        ball_moving = False  # Stop ball movement
+        game_state["ball_moving"] = False  # Stop ball movement
     else:
-        ball_moving = True  # Start ball movement
+        game_state["ball_moving"] = True  # Start ball movement
 
     # Ball collision with walls
-    if ball.top <= 0 or ball.bottom >= HEIGHT:
+    if ball.rect.top <= 0 or ball.rect.bottom >= HEIGHT:
         ball_speed[1] = -ball_speed[1]
 
     # Ball collision with walls (scoring)
-    if ball.left <= 0:
-        opponent_score += 1
+    if ball.rect.left <= 0:
+        game_state["opponent_score"] += 1
         reset_ball()
-        reset_start_time = time.time()  # Record the time when the ball is reset
-        ball_moving = False  # Stop ball movement
-    elif ball.right >= WIDTH:
-        player_score += 1
+        game_state["reset_start_time"] = time.time()  # Record the time when the ball is reset
+        game_state["ball_moving"] = False  # Stop ball movement
+    elif ball.rect.right >= WIDTH:
+        game_state["player_score"] += 1
         reset_ball()
-        reset_start_time = time.time()  # Record the time when the ball is reset
-        ball_moving = False  # Stop ball movement
+        game_state["reset_start_time"] = time.time()  # Record the time when the ball is reset
+        game_state["ball_moving"] = False  # Stop ball movement
 
     # Ball collision with paddles
-    if ball.colliderect(player_paddle) or ball.colliderect(opponent_paddle):
+    if ball.rect.colliderect(player_paddle.rect) or ball.rect.colliderect(opponent_paddle.rect):
         ball_speed[0] = -ball_speed[0]
 
     # Increase ball speed over time
@@ -135,9 +147,9 @@ while running:
 
     # Batch drawing onto the batch_surface
     batch_surface.fill(BLACK)
-    pygame.draw.rect(batch_surface, WHITE, player_paddle)
-    pygame.draw.rect(batch_surface, WHITE, opponent_paddle)
-    pygame.draw.ellipse(batch_surface, WHITE, ball)
+    player_paddle.draw(batch_surface)
+    opponent_paddle.draw(batch_surface)
+    pygame.draw.ellipse(batch_surface, WHITE, ball.rect)  # Draw the ball as an ellipse
     pygame.draw.aaline(batch_surface, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))
 
     # Update the screen with the batch drawing
@@ -145,13 +157,12 @@ while running:
 
     # Draw scores and text directly onto the screen
     font = pygame.font.Font(None, 36)
-    player_score_text = font.render(f"Player: {player_score}", True, WHITE)
-    opponent_score_text = font.render(f"Opponent: {opponent_score}", True, WHITE)
+    player_score_text = font.render(f"Player: {game_state['player_score']}", True, WHITE)
+    opponent_score_text = font.render(f"Opponent: {game_state['opponent_score']}", True, WHITE)
     screen.blit(player_score_text, (10, 10))
     screen.blit(opponent_score_text, (WIDTH - opponent_score_text.get_width() - 10, 10))
 
-    # Enable Text if Player AI is Enabled
-    if player_ai_enabled:
+    if game_state["player_ai_enabled"]:
         text = font.render("Player AI Enabled", True, WHITE)
         screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 10))
 
