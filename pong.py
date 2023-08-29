@@ -20,6 +20,7 @@ PADDLE_SPEED = int(os.environ.get("PADDLE_SPEED", 5))
 BALL_SPEED_X = int(os.environ.get("BALL_SPEED_X", 5))
 BALL_SPEED_Y = int(os.environ.get("BALL_SPEED_Y", 5))
 TICK_RATE = int(os.environ.get("TICK_RATE", 60))
+RESET_TIME = float(os.environ.get("RESET_TIME", 1.0))
 BALL_SPEED_INCREASE = float(os.environ.get("BALL_SPEED_INCREASE", 0.0001))
 
 # Colors
@@ -69,7 +70,7 @@ def move_opponent():
 
 # AI Player movement
 def move_player_ai():
-    if ball_speed[0] < 0:  # Only move when the ball is coming towards the player AI
+    if game_state["player_ai_enabled"] and ball_speed[0] < 0:
         if ball.rect.centery > player_paddle.rect.centery:
             player_paddle.move(0, PADDLE_SPEED)
         elif ball.rect.centery < player_paddle.rect.centery:
@@ -116,7 +117,7 @@ while running:
         ball.rect.y += ball_speed[1]
 
     time_since_reset = time.time() - game_state["reset_start_time"]
-    if time_since_reset < 1:  # Delay the ball movement for 1 second
+    if time_since_reset < RESET_TIME:  # Delay the ball movement for a set amount of time
         game_state["ball_moving"] = False  # Stop ball movement
     else:
         game_state["ball_moving"] = True  # Start ball movement
@@ -167,6 +168,6 @@ while running:
         screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 10))
 
     pygame.display.flip()
-    clock.tick(TICK_RATE)
+    clock.tick_busy_loop(TICK_RATE)
 
 pygame.quit()
