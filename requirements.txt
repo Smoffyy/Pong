@@ -1,2 +1,2 @@
 pygame==2.5.1
-python-dotenv==
+python-dotenv==1.0.0
