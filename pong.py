@@ -82,6 +82,29 @@ def reset_ball():
     ball_speed[0] = random.choice([-1, 1]) * BALL_SPEED_X
     ball_speed[1] = random.choice([-1, 1]) * BALL_SPEED_Y
 
+def predict_ball_trajectory(ball_rect, ball_speed, num_frames):
+    """
+    Predicts the trajectory of the ball based on its current position and speed.
+
+    Args:
+        ball_rect (pygame.Rect): The current rectangle representing the ball's position.
+        ball_speed (list): The current speed of the ball in the x and y directions.
+        num_frames (int): The number of frames to predict ahead.
+
+    Returns:
+        list: A list of predicted (x, y) positions of the ball for the specified number of frames.
+    """
+    predicted_positions = []
+    x, y = ball_rect.center
+    dx, dy = ball_speed
+
+    for _ in range(num_frames):
+        x += dx
+        y += dy
+        predicted_positions.append((x, y))
+
+    return predicted_positions
+
 # Main game loop
 running = True
 while running:
@@ -166,6 +189,20 @@ while running:
     if game_state["player_ai_enabled"]:
         text = font.render("Player AI Enabled", True, WHITE)
         screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 10))
+
+    num_frames = TICK_RATE // 4  # Number of frames to predict ahead divided by a certain number. (Helps with performance)
+
+    # Predict ball trajectories for the opponent and player AI
+    opponent_predicted_positions = predict_ball_trajectory(opponent_paddle.rect, ball_speed, num_frames)
+    player_ai_predicted_positions = predict_ball_trajectory(player_paddle.rect, ball_speed, num_frames)
+
+    # Draw prediction lines for the opponent's trajectory
+    for pos in opponent_predicted_positions:
+        pygame.draw.line(batch_surface, (0, 255, 0), ball.rect.center, pos, 2)
+
+    # Draw prediction lines for the player AI's trajectory
+    for pos in player_ai_predicted_positions:
+        pygame.draw.line(batch_surface, (0, 0, 255), ball.rect.center, pos, 2)
 
     pygame.display.flip()
     clock.tick_busy_loop(TICK_RATE)
